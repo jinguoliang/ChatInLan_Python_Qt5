@@ -6,7 +6,8 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
+
 
 class Ui_LanTrans(object):
     def setupUi(self, LanTrans):
@@ -117,10 +118,10 @@ class Ui_LanTrans(object):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     LanTrans = QtWidgets.QMainWindow()
     ui = Ui_LanTrans()
     ui.setupUi(LanTrans)
     LanTrans.show()
     sys.exit(app.exec_())
-
