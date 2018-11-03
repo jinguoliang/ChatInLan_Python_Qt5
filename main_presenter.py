@@ -1,19 +1,19 @@
 import getpass
 from os import path
 
-from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtWidgets import *
 
+import TcpClientThread
+import UdpClient
 import receiver
 import sender
+from UIMain import UIMain
 from itemWidget import ItemWidget
-from mainUI import Ui_LanTrans
 
 
-class LanTrans(Ui_LanTrans, QtWidgets.QMainWindow):
+class LanTrans(UIMain):
     def __init__(self):
-        super(LanTrans, self).__init__()
-        self.setupUi(self)
+        super().__init__()
 
         self.DELIMITER = "    \neofeof    \neofeof"
         self.EOF = "    \neofeof"
@@ -61,9 +61,9 @@ class LanTrans(Ui_LanTrans, QtWidgets.QMainWindow):
 
         # 添加信号槽, 更新当前状态
         # sender
-        self.udpClientThread = sender.udpClientThread(caller=self)
-        self.tcpClientThread = sender.tcpClientThread(caller=self)
-        self.sendFileThread = sender.sendFileThread(caller=self)
+        self.udpClientThread = UdpClient.UdpClient(caller=self)
+        self.tcpClientThread = TcpClientThread.TcpClientThread(caller=self)
+        self.sendFileThread = sender.SendFileThread(caller=self)
         self.udpClientThread.updateState.connect(self.updateState)
         self.tcpClientThread.updateState.connect(self.updateState)
         self.sendFileThread.updateState.connect(self.updateState)
@@ -71,6 +71,7 @@ class LanTrans(Ui_LanTrans, QtWidgets.QMainWindow):
 
         # receiver
         self.udpServerThread = receiver.udpServerThread(caller=self)
+        self.udpServerThread.start()
         self.tcpServerThread = receiver.tcpServerThread(caller=self)
         self.receiveFileThread = receiver.receiveFileThread(caller=self)
         # state change update '''add update state slot'''
@@ -81,27 +82,27 @@ class LanTrans(Ui_LanTrans, QtWidgets.QMainWindow):
         self.receiveFileThread.updateRate.connect(self.updateProcess)
 
         '''设置按钮监听'''
-        self.removeBtn.clicked.connect(self.removeFileAction)
-        self.savePathBtn.clicked.connect(self.savePathAction)
+        # self.removeBtn.clicked.connect(self.removeFileAction)
+        # self.savePathBtn.clicked.connect(self.savePathAction)
         self.addFileBtn.clicked.connect(self.addFileAction)
-        self.sendFileRadio.clicked.connect(self.sendFileChecked)
-        self.receiveFileRadio.clicked.connect(self.receiveFileChecked)
-        self.connectHostBtn.clicked.connect(self.searchReceiverAction)
-        self.startBtn.clicked.connect(self.startWork)
+        # self.sendFileRadio.clicked.connect(self.sendFileChecked)
+        # self.receiveFileRadio.clicked.connect(self.receiveFileChecked)
+        # self.connectHostBtn.udpServerThreadclicked.connect(self.searchReceiverAction)
+        # self.startBtn.clicked.connect(self.startWork)
 
         '''将状态栏中的焦点移动到最后'''
-        self.statusText.moveCursor(QtGui.QTextCursor.End)
-        self.statusText.ensureCursorVisible()
+        # self.statusText.moveCursor(QtGui.QTextCursor.End)
+        # self.statusText.ensureCursorVisible()
 
         '''将列表焦点移动到最后'''
-        self.statusText.moveCursor(QtGui.QTextCursor.End)
-        self.statusText.ensureCursorVisible()
+        # self.statusText.moveCursor(QtGui.QTextCursor.End)
+        # self.statusText.ensureCursorVisible()
 
         # 默认设置为发送文件
-        self.sendFileChecked()
+        # self.sendFileChecked()
 
-        self.actionExit.triggered.connect(QApplication.quit)
-        self.actionAbout.triggered.connect(self.showAbout)
+        # self.actionExit.triggered.connect(QApplication.quit)
+        # self.actionAbout.triggered.connect(self.showAbout)
 
     def showAbout(self):
         QMessageBox.information(self, "关于此软件",
@@ -127,19 +128,9 @@ class LanTrans(Ui_LanTrans, QtWidgets.QMainWindow):
             self.thisTimeFinished = False
 
         self.isSendFile = True
-        self.receiveFileRadio.setEnabled(True)
-        self.sendFileRadio.setEnabled(False)
 
         self.addFileBtn.setEnabled(True)
-        self.removeBtn.setEnabled(True)
-        self.connectHostBtn.setEnabled(True)
-        self.startBtn.setVisible(True)
-        self.startBtn.setDefault(True)
-        self.startBtn.setEnabled(True)
-        self.savePathBtn.setEnabled(False)
-
-        self.connectHostBtn.setText("扫描")
-        self.statusBar().showMessage("发送文件")
+        # self.savePathBtn.setEnabled(False)
 
     def receiveFileChecked(self):  # =====================================================================
         '''接收文件时设置的状态'''
@@ -180,7 +171,7 @@ class LanTrans(Ui_LanTrans, QtWidgets.QMainWindow):
 
     def addFileAction(self):
         '''promt a file selector window and add file to to sending file list'''
-        if self.thisTimeFinished == True:
+        if self.thisTimeFinished:
             self.reset()
             self.recoverState()
             self.thisTimeFinished = False
@@ -200,8 +191,7 @@ class LanTrans(Ui_LanTrans, QtWidgets.QMainWindow):
             self.fileList.addItem(fileItem)
             self.fileList.setItemWidget(fileItem, itemWidget)
 
-        if len(self.files) > 0:
-            self.statusText.append("<b><font color='blue'>MESSAGE:&nbsp;</font></b>完成文件选择")
+        self.startWork()
 
     def removeFileAction(self):
         # traverse from end to start
@@ -295,25 +285,6 @@ class LanTrans(Ui_LanTrans, QtWidgets.QMainWindow):
             self.fileList.addItem(fileItem)
             self.fileList.setItemWidget(fileItem, itemWidget)
 
-    def searchReceiverAction(self):
-        '''search file receiver in LAN'''
-        self.disableAllBtn()
-        self.disableList()
-        if self.isSendFile == True:
-            if len(self.files) == 0:
-                QMessageBox.information(self, "Message", "请先选择文件")
-                self.recoverState()
-            else:
-                self.startBtn.setEnabled(False)
-                # clear file list
-                self.udpClientThread.start()
-        elif self.isSendFile == False:
-            if self.savePath == None:
-                QMessageBox.information(self, "Message", "请选择文件保存路径")
-                self.recoverState()
-            else:
-                self.udpServerThread.start()
-
     def constructConnection(self):
         '''create a tcp connection'''
         if self.isSendFile == True:
@@ -331,6 +302,8 @@ class LanTrans(Ui_LanTrans, QtWidgets.QMainWindow):
 
     # start button is only for send file
     def startWork(self):  # 点击发送文件后的函数
+        self.udpClientThread.start()
+
         if len(self.files) == 0:
             QMessageBox.information(self, "Message", "请先选择文件")
 
@@ -346,12 +319,4 @@ class LanTrans(Ui_LanTrans, QtWidgets.QMainWindow):
             QMessageBox.information(self, "Message", "未建立有效连接, 请扫描局域网")
 
 
-if __name__ == "__main__":
-    import sys
 
-    app = QApplication(sys.argv)
-    w = LanTrans()
-    w.loadConfig()
-    w.sendFileChecked()
-    w.show()
-    sys.exit(app.exec_())
