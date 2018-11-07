@@ -173,8 +173,11 @@ class LanTrans(UIMain):
             itemWidget.fileCheckBox.setCheckState(2)  # 2 represent checked
             itemWidget.fileCheckBox.setEnabled(False)
 
+    def onGetPoint(self, address):
+        print("onGetPoint: ", address)
+
     def scanAction(self):
-        self.detector.get_all_point()
+        self.detector.get_all_point(self.onGetPoint, 10)
 
     def addFileAction(self):
         '''promt a file selector window and add file to to sending file list'''
