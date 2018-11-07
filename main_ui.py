@@ -6,6 +6,9 @@ class UIMain(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.scan_button = None
+        self.send = None
+
         self.translate = QtCore.QCoreApplication.translate
 
         self.setObjectName("clazz")
@@ -23,52 +26,75 @@ class UIMain(QtWidgets.QMainWindow):
         centralWidget = QtWidgets.QWidget(self)
         centralWidget.setObjectName("centralwidget")
 
-        verticalLayoutWidget_2 = QtWidgets.QWidget(centralWidget)
-        verticalLayoutWidget_2.setGeometry(QtCore.QRect(511, 45, 151, 261))
-        verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
-
-        receiveFileLayout = QtWidgets.QVBoxLayout(verticalLayoutWidget_2)
-        receiveFileLayout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
-        receiveFileLayout.setObjectName("receiveFileLayout")
-
-        self.addFileBtn = QtWidgets.QPushButton(verticalLayoutWidget_2)
-        self.addFileBtn.setObjectName("addFileBtn")
-        receiveFileLayout.addWidget(self.addFileBtn)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        receiveFileLayout.addItem(spacerItem)
-        savePathBtn = QtWidgets.QPushButton(verticalLayoutWidget_2)
-        savePathBtn.setObjectName("savePathBtn")
-        receiveFileLayout.addWidget(savePathBtn)
-
-        verticalLayoutWidget_3 = QtWidgets.QWidget(centralWidget)
-        verticalLayoutWidget_3.setGeometry(QtCore.QRect(30, 20, 471, 171))
-        verticalLayoutWidget_3.setObjectName("verticalLayoutWidget_3")
-        statusLayout = QtWidgets.QVBoxLayout(verticalLayoutWidget_3)
-        statusLayout.setObjectName("statusLayout")
-        status = QtWidgets.QLabel(verticalLayoutWidget_3)
-        status.setObjectName("status")
-        statusLayout.addWidget(status)
-        statusText = QtWidgets.QTextBrowser(verticalLayoutWidget_3)
-        statusText.setObjectName("statusText")
-        statusLayout.addWidget(statusText)
-        verticalLayoutWidget_4 = QtWidgets.QWidget(centralWidget)
-        verticalLayoutWidget_4.setGeometry(QtCore.QRect(29, 209, 471, 241))
-        verticalLayoutWidget_4.setObjectName("verticalLayoutWidget_4")
-        processdureLayout = QtWidgets.QVBoxLayout(verticalLayoutWidget_4)
-        processdureLayout.setObjectName("processdureLayout")
-        processdure = QtWidgets.QLabel(verticalLayoutWidget_4)
-        processdure.setObjectName("processdure")
-        processdureLayout.addWidget(processdure)
-        self.fileList = QtWidgets.QListWidget(verticalLayoutWidget_4)
-        self.fileList.setObjectName("fileList")
-        processdureLayout.addWidget(self.fileList)
+        self.create_control_part(centralWidget)
+        self.create_receiver_part(centralWidget)
+        self.create_list_part(centralWidget)
 
         self.setCentralWidget(centralWidget)
 
-        self.addFileBtn.setText(self.translate("LanTrans", "添加"))
-        savePathBtn.setText(self.translate("LanTrans", "保存位置"))
-        status.setText(self.translate("LanTrans", "状态"))
-        processdure.setText(self.translate("LanTrans", "进度"))
+    def create_control_part(self, parent):
+        part = QtWidgets.QWidget(parent)
+        part.setGeometry(QtCore.QRect(511, 45, 151, 261))
+        part.setObjectName("part")
+
+        vbox = QtWidgets.QVBoxLayout(part)
+        vbox.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
+        vbox.setObjectName("vbox")
+
+        self.scan_button = QtWidgets.QPushButton(part)
+        self.scan_button.setObjectName("scan_button")
+        self.scan_button.setText(self.translate("LanTrans", "扫描"))
+
+        vbox.addWidget(self.scan_button)
+
+        space = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        vbox.addItem(space)
+
+        self.send = QtWidgets.QPushButton(part)
+        self.send.setObjectName("send")
+        self.send.setText(self.translate("LanTrans", "发送"))
+        vbox.addWidget(self.send)
+
+        return part
+
+    def create_list_part(self, parent):
+        part = QtWidgets.QWidget(parent)
+        part.setGeometry(QtCore.QRect(29, 209, 471, 241))
+        part.setObjectName("part")
+
+        vbox = QtWidgets.QVBoxLayout(part)
+        vbox.setObjectName("vbox")
+
+        label = QtWidgets.QLabel(part)
+        label.setObjectName("label")
+        label.setText(self.translate("LanTrans", "进度："))
+        vbox.addWidget(label)
+
+        self.fileList = QtWidgets.QListWidget(part)
+        self.fileList.setObjectName("fileList")
+        vbox.addWidget(self.fileList)
+
+        return part
+
+    def create_receiver_part(self, parent):
+        part = QtWidgets.QWidget(parent)
+        part.setGeometry(QtCore.QRect(30, 20, 471, 171))
+        part.setObjectName("part")
+
+        vbox = QtWidgets.QVBoxLayout(part)
+        vbox.setObjectName("vbox")
+
+        label = QtWidgets.QLabel(part)
+        label.setObjectName("label")
+        label.setText(self.translate("LanTrans", "接收者："))
+        vbox.addWidget(label)
+
+
+        text = QtWidgets.QTextBrowser(part)
+        text.setObjectName("text")
+        vbox.addWidget(text)
+
+        return part
 
     def construct_status_bar(self):
         status_bar = QtWidgets.QStatusBar(self)

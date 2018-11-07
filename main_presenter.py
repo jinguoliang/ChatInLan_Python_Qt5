@@ -7,8 +7,9 @@ import TcpClientThread
 import UdpClient
 import receiver
 import sender
-from UIMain import UIMain
 from itemWidget import ItemWidget
+from main_ui import UIMain
+from point_detector import PointDetector
 
 
 class LanTrans(UIMain):
@@ -17,6 +18,8 @@ class LanTrans(UIMain):
 
         self.DELIMITER = "    \neofeof    \neofeof"
         self.EOF = "    \neofeof"
+
+        self.detector = PointDetector()
 
         self.NAME_LEN_SPT = "~"
         self.FILES_SPT = "`"
@@ -61,13 +64,13 @@ class LanTrans(UIMain):
 
         # 添加信号槽, 更新当前状态
         # sender
-        self.udpClientThread = UdpClient.UdpClient(caller=self)
-        self.tcpClientThread = TcpClientThread.TcpClientThread(caller=self)
-        self.sendFileThread = sender.SendFileThread(caller=self)
-        self.udpClientThread.updateState.connect(self.updateState)
-        self.tcpClientThread.updateState.connect(self.updateState)
-        self.sendFileThread.updateState.connect(self.updateState)
-        self.sendFileThread.updateRate.connect(self.updateProcess)
+        # self.udpClientThread = UdpClient.UdpClient(caller=self)
+        # self.tcpClientThread = TcpClientThread.TcpClientThread(caller=self)
+        # self.sendFileThread = sender.SendFileThread(caller=self)
+        # self.udpClientThread.updateState.connect(self.updateState)
+        # self.tcpClientThread.updateState.connect(self.updateState)
+        # self.sendFileThread.updateState.connect(self.updateState)
+        # self.sendFileThread.updateRate.connect(self.updateProcess)
 
         # receiver
         self.udpServerThread = receiver.udpServerThread(caller=self)
@@ -84,7 +87,8 @@ class LanTrans(UIMain):
         '''设置按钮监听'''
         # self.removeBtn.clicked.connect(self.removeFileAction)
         # self.savePathBtn.clicked.connect(self.savePathAction)
-        self.addFileBtn.clicked.connect(self.addFileAction)
+        self.send.clicked.connect(self.addFileAction)
+        self.scan_button.clicked.connect(self.scanAction)
         # self.sendFileRadio.clicked.connect(self.sendFileChecked)
         # self.receiveFileRadio.clicked.connect(self.receiveFileChecked)
         # self.connectHostBtn.udpServerThreadclicked.connect(self.searchReceiverAction)
@@ -129,7 +133,7 @@ class LanTrans(UIMain):
 
         self.isSendFile = True
 
-        self.addFileBtn.setEnabled(True)
+        self.scan_button.setEnabled(True)
         # self.savePathBtn.setEnabled(False)
 
     def receiveFileChecked(self):  # =====================================================================
@@ -142,7 +146,7 @@ class LanTrans(UIMain):
         self.sendFileRadio.setEnabled(True)
         self.receiveFileRadio.setEnabled(False)
 
-        self.addFileBtn.setEnabled(False)
+        self.scan_button.setEnabled(False)
         self.removeBtn.setEnabled(False)
         self.savePathBtn.setEnabled(True)
         self.startBtn.setVisible(False)
@@ -155,7 +159,7 @@ class LanTrans(UIMain):
     def disableAllBtn(self):
         '''禁掉所有按钮'''
         self.savePathBtn.setEnabled(False)
-        self.addFileBtn.setEnabled(False)
+        self.scan_button.setEnabled(False)
         self.removeBtn.setEnabled(False)
         self.connectHostBtn.setEnabled(False)
         self.startBtn.setEnabled(False)
@@ -168,6 +172,9 @@ class LanTrans(UIMain):
             itemWidget = self.fileList.itemWidget(self.fileList.item(i))
             itemWidget.fileCheckBox.setCheckState(2)  # 2 represent checked
             itemWidget.fileCheckBox.setEnabled(False)
+
+    def scanAction(self):
+        self.detector.get_all_point()
 
     def addFileAction(self):
         '''promt a file selector window and add file to to sending file list'''

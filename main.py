@@ -8,8 +8,7 @@
 
 from PyQt5 import QtWidgets
 
-from LanTrans_desktop import LanTrans
-from UIMain import UIMain
+from main_presenter import LanTrans
 
 if __name__ == "__main__":
     import sys
