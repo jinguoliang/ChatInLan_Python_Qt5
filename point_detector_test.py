@@ -10,20 +10,37 @@ class PointDetectorTest(unittest.TestCase):
 
     def setUp(self):
         self.detector = PointDetector()
+        self.result = None
 
     def testDetect(self):
-        self.assertEqual([], self.detector.get_all_point())
+        lock = threading.Lock()
+        lock.acquire()
+
+        def callback(x):
+            self.result = x
+            lock.release()
+
+        self.detector.get_all_point(callback, False)
+        lock.acquire()
+        self.assertEqual(["192.168.199.118"], self.result)
 
     def testBroadcast(self):
         threading.Thread(target=self.broadcastThread).start()
         print("listening")
-        msg, _ = self.detector.listen()
+        address = self.detector.listen("test", False)
         print("received")
-        self.assertEqual(BROADCAST_DATA, msg)
+        self.assertEqual(["192.168.199.118"], address)
+
+    def testListen_Instant(self):
+        def callback(address):
+            print(address)
+
+        print("Please broadcast message")
+        self.detector.listen("test", True, callback=callback)
 
     def broadcastThread(self):
-        time.sleep(5)
-        self.detector.broadcast()
+        time.sleep(2)
+        self.detector.broadcast("test")
         print("broadcast")
 
 
