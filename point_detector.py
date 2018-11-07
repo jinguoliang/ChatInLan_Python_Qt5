@@ -37,6 +37,8 @@ class PointDetector:
         a_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         a_socket.bind(("", LISTENER_PORT))
         a_socket.settimeout(TIMEOUT)
+
+        buf = "".encode(UTF_8)
         try:
             buf, address = a_socket.recvfrom(len(msg))
         except Exception as e:
