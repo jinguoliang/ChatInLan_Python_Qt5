@@ -5,8 +5,9 @@ import time
 LISTENER_PORT = 1992
 
 UTF_8 = "utf-8"
-
+TIMEOUT = 8
 BROADCAST_DATA = "I'm sender, where is the receiver"
+BROADCAST_RESPOND_DATA = "I'm receiver and I'm here"
 
 
 class PointDetector:
@@ -15,11 +16,9 @@ class PointDetector:
     def __init__(self):
         self.callbacks = []
 
-    def get_all_point(self, callback, is_instant):
-        threading.Thread(target=self.listen_thread, args=(is_instant, )).start()
-        time.sleep(1)
-        self.callbacks.append(callback)
+    def get_all_point(self, callback, duration):
         self.broadcast(BROADCAST_DATA)
+        self.listen(BROADCAST_RESPOND_DATA, duration, callback=callback)
 
     def listen_thread(self, args):
         print("start listen")
@@ -34,25 +33,36 @@ class PointDetector:
         a_socket.sendto(msg.encode(UTF_8), ("<broadcast>", LISTENER_PORT))
         a_socket.close()
 
-    def listen(self, msg, is_instant, callback=None):
+    def listen(self, msg, duration, callback=None):
         a_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         a_socket.bind(("", LISTENER_PORT))
-        buf, address = a_socket.recvfrom(len(msg))
+        a_socket.settimeout(TIMEOUT)
+        try:
+            buf, address = a_socket.recvfrom(len(msg))
+        except Exception as e:
+            print(e)
         print("received: " + buf.decode(UTF_8))
+
         result = []
 
-        if not is_instant:
+        if duration == 0:
             if buf.decode(UTF_8) == msg:
                 result.append(address[0])
-                a_socket.close()
+            a_socket.close()
             return result
-
-        while True:
+        start = time.time()
+        while time.time() - start < duration:
             if buf.decode(UTF_8) == msg:
                 callback(address[0])
-            buf, address = a_socket.recvfrom(len(msg))
+                break
 
+            try:
+                buf, address = a_socket.recvfrom(len(msg))
+            except Exception as e:
+                print(e)
+        a_socket.close()
 
 
 if __name__ == '__main__':
+    PointDetector().broadcast(BROADCAST_RESPOND_DATA)
     PointDetector().broadcast("test")
