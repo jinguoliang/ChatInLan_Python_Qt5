@@ -224,11 +224,7 @@ class LanTrans(UIMain):
             print("receiver", "file will saved in:", self.savePath)
 
     def updateState(self, msg):
-        if msg[0] == "warning":
-            QMessageBox.information(self, "Warnning", msg[1])
-            self.recoverState()
-        else:
-            self.statusText.append(msg[1])
+        pass
 
     def updateProcess(self, pair):
         # (-1, -1, -1) all file finished
