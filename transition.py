@@ -1,4 +1,5 @@
 import socket
+from threading import Thread
 
 BLOCK_SIZE = 1024
 
@@ -15,10 +16,22 @@ class Server:
 
         while True:
             client_sock, address = self.server_sock.accept()
-            data = client_sock.recv(BLOCK_SIZE).decode()
-            while data:
-                print(data)
-                data = client_sock.recv(BLOCK_SIZE).decode()
+            self.receive_data_from_socket_in_another_thread(client_sock)
+
+    def receive_data_from_socket_in_another_thread(self, client_sock):
+        ReceiverThread(client_sock).start()
+
+
+class ReceiverThread(Thread):
+    def __init__(self, sock):
+        Thread.__init__(self)
+        self.client_sock = sock
+
+    def run(self):
+        data = self.client_sock.recv(BLOCK_SIZE).decode()
+        while data:
+            print(data)
+            data = self.client_sock.recv(BLOCK_SIZE).decode()
 
 
 class Client:
