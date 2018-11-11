@@ -26,10 +26,11 @@ class Client:
         self.client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def send(self, address, path):
-        data = self.getContent(path)
+        data = read_content(path)
         self.client_sock.connect((address[0], TRANSITION_SERVER_PORT))
         self.client_sock.send(data)
 
-    def getContent(self, path):
+
+def read_content(path):
         f = open(path, 'rb')
         return f.read()
