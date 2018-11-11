@@ -1,15 +1,16 @@
 import getpass
 from os import path
+from threading import Thread
 
 from PyQt5.QtWidgets import *
 
-import TcpClientThread
-import UdpClient
 import receiver
-import sender
+from client_scan import *
+from detect_listener import DetectListener
 from itemWidget import ItemWidget
 from main_ui import UIMain
-from point_detector import PointDetector
+from point_detector import *
+from transition import Server, Client
 
 
 class LanTrans(UIMain):
@@ -20,6 +21,12 @@ class LanTrans(UIMain):
         self.EOF = "    \neofeof"
 
         self.detector = PointDetector()
+
+        self.scanner = Scanner()
+        self.waiter = Waiter()
+
+        self.transition_server = Server()
+        self.transition_client = Client()
 
         self.NAME_LEN_SPT = "~"
         self.FILES_SPT = "`"
@@ -72,6 +79,8 @@ class LanTrans(UIMain):
         # self.sendFileThread.updateState.connect(self.updateState)
         # self.sendFileThread.updateRate.connect(self.updateProcess)
 
+        self.startListening()
+
         # receiver
         self.udpServerThread = receiver.udpServerThread(caller=self)
         self.udpServerThread.start()
@@ -87,7 +96,7 @@ class LanTrans(UIMain):
         '''设置按钮监听'''
         # self.removeBtn.clicked.connect(self.removeFileAction)
         # self.savePathBtn.clicked.connect(self.savePathAction)
-        self.send.clicked.connect(self.addFileAction)
+        self.send.clicked.connect(self.send_file_action)
         self.scan_button.clicked.connect(self.scanAction)
         # self.sendFileRadio.clicked.connect(self.sendFileChecked)
         # self.receiveFileRadio.clicked.connect(self.receiveFileChecked)
@@ -107,6 +116,10 @@ class LanTrans(UIMain):
 
         # self.actionExit.triggered.connect(QApplication.quit)
         # self.actionAbout.triggered.connect(self.showAbout)
+
+    def startListening(self):
+        Thread(target=self.waiter.loop).start()
+        Thread(target=self.transition_server.listen).start()
 
     def showAbout(self):
         QMessageBox.information(self, "关于此软件",
@@ -177,31 +190,28 @@ class LanTrans(UIMain):
         print("onGetPoint: ", address)
 
     def scanAction(self):
-        self.detector.get_all_point(self.onGetPoint, 10)
+        Thread(target=self.scanPoint).start()
 
-    def addFileAction(self):
-        '''promt a file selector window and add file to to sending file list'''
-        if self.thisTimeFinished:
-            self.reset()
-            self.recoverState()
-            self.thisTimeFinished = False
+    def scanPoint(self):
+        self.address = self.scanner.scan()
+        Thread(target=self.sendData).start()
 
-        fileNames = QFileDialog.getOpenFileNames(self, "选择您想要传输的文件", self.baseDir)
-        print(fileNames)
+    def sendData(self):
+        self.transition_client.send(self.address)
 
-        for file in fileNames[0]:
-            print(file)
-            itemWidget = ItemWidget()
-            itemWidget.setFileName(path.basename(file))
-            self.files.append(file)  # append new added file to ready list
-            itemWidget.setState()
-            itemWidget.setProcedure(0)
-            fileItem = QListWidgetItem()
-            fileItem.setSizeHint(itemWidget.sizeHint())
-            self.fileList.addItem(fileItem)
-            self.fileList.setItemWidget(fileItem, itemWidget)
+    def send_file_action(self):
 
-        self.startWork()
+        file_name = self.select_file()
+        if file_name is None:
+            return
+
+        print(file_name)
+
+        self.send_file(file_name)
+
+    def select_file(self):
+        r = QFileDialog.getOpenFileName(self, "选择您想要传输的文件", "~/")
+        return r[0]
 
     def removeFileAction(self):
         # traverse from end to start
@@ -262,20 +272,6 @@ class LanTrans(UIMain):
             print("receiver", "recoverState()", "this is receive file client")
             self.receiveFileChecked()
 
-    def reset(self):
-        self.files = []
-        self.baseDir = "/home/" + getpass.getuser()
-        self.savePath = None
-        self.senderAddr = None
-        self.senderAddr = None
-        self.receiverAddr = None
-        self.receiverAddr = None
-        self.clientTcpConn = None
-        self.serverTcpConn = None
-        self.hasConnectedToRecver = False
-        self.statusText.setText("")
-        self.fileList.clear()
-
     def genRecvList(self, files):
         for file in files:
             itemWidget = ItemWidget()
@@ -306,23 +302,5 @@ class LanTrans(UIMain):
                 self.receiveFileThread.setFileDesc(self.fileDesc, self.savePath)
                 self.receiveFileThread.start()
 
-    # start button is only for send file
-    def startWork(self):  # 点击发送文件后的函数
-        self.udpClientThread.start()
-
-        if len(self.files) == 0:
-            QMessageBox.information(self, "Message", "请先选择文件")
-
-        elif self.receiverAddr is not None:
-            self.constructConnection()
-            if self.hasConnectedToRecver == True:
-                print("main connection is ok")
-                self.disableList()
-                self.disableAllBtn()
-                self.sendFileThread.setFile(self.files)
-                self.sendFileThread.start()
-        else:
-            QMessageBox.information(self, "Message", "未建立有效连接, 请扫描局域网")
-
-
-
+    def send_file(self, file_path):
+        pass
