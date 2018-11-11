@@ -89,10 +89,9 @@ class UIMain(QtWidgets.QMainWindow):
         label.setText(self.translate("LanTrans", "接收者："))
         vbox.addWidget(label)
 
-
-        text = QtWidgets.QTextBrowser(part)
-        text.setObjectName("text")
-        vbox.addWidget(text)
+        self.receiver_list_widget = QtWidgets.QListWidget(part)
+        self.receiver_list_widget.setObjectName("receiver_list")
+        vbox.addWidget(self.receiver_list_widget)
 
         return part
 
