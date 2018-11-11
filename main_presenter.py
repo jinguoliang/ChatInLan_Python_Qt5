@@ -72,4 +72,16 @@ class LanTrans(UIMain):
         return r[0]
 
     def send_file(self, file_path):
-        pass
+        SendFileThread(self.address, file_path).start()
+
+
+class SendFileThread(Thread):
+
+    def __init__(self, address, path):
+        Thread.__init__(self, target=self.run)
+        self.file_path = path
+        self.address = address
+        self.transition_client = Client()
+
+    def run(self):
+        self.transition_client.send(self.address, self.file_path)
