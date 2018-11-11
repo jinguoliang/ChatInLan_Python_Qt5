@@ -12,9 +12,6 @@ class LanTrans(UIMain):
     def __init__(self):
         super().__init__()
 
-        self.DELIMITER = "    \neofeof    \neofeof"
-        self.EOF = "    \neofeof"
-
         self.detector = PointDetector()
 
         self.scanner = Scanner()
@@ -22,40 +19,26 @@ class LanTrans(UIMain):
 
         self.transition_server = Server()
 
-        self.startListening()
+        self.start_listening()
 
         self.send.clicked.connect(self.send_file_action)
-        self.scan_button.clicked.connect(self.scanAction)
+        self.scan_button.clicked.connect(self.scan_action)
 
-    def startListening(self):
+    def start_listening(self):
         Thread(target=self.waiter.loop).start()
         Thread(target=self.transition_server.listen).start()
 
-    def loadConfig(self):
-        print("load configuration file")
-        try:
-            f = open("conf.ini", "r")
-            for line in f:
-                line = line.strip()
-                if len(line) > 0 and line[0] != "#":
-                    exec("self." + line)
+    def scan_action(self):
+        Thread(target=self.scan_point).start()
 
-        except FileNotFoundError as e:
-            print("configure file not exist, using default")
-            return
+    def scan_point(self):
+        self.addresses = self.scanner.scan()
+        print(self.addresses)
+        self.display_receiver(self.addresses)
 
-    def onGetPoint(self, address):
-        print("onGetPoint: ", address)
-
-    def scanAction(self):
-        Thread(target=self.scanPoint).start()
-
-    def scanPoint(self):
-        self.address = self.scanner.scan()
-        self.display_receiver(self.address)
-
-    def display_receiver(self, receiver):
-        self.receiver_list_widget.addItem(str(receiver))
+    def display_receiver(self, receivers):
+        self.receiver_list_widget.clear()
+        self.receiver_list_widget.addItems([r[0] for r in receivers])
 
     def send_file_action(self):
 
@@ -72,7 +55,7 @@ class LanTrans(UIMain):
         return r[0]
 
     def send_file(self, file_path):
-        SendFileThread(self.address, file_path).start()
+        SendFileThread(self.addresses, file_path).start()
 
 
 class SendFileThread(Thread):
