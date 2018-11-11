@@ -83,6 +83,7 @@ def udp_send(msg, address):
 
 def udp_server(port):
     a_socket = udp_sock()
+    a_socket.settimeout(10)
     a_socket.bind(("", port))
     return a_socket
 
