@@ -1,13 +1,8 @@
-import getpass
-from os import path
 from threading import Thread
 
 from PyQt5.QtWidgets import *
 
-import receiver
 from client_scan import *
-from detect_listener import DetectListener
-from itemWidget import ItemWidget
 from main_ui import UIMain
 from point_detector import *
 from transition import Server, Client
@@ -26,104 +21,15 @@ class LanTrans(UIMain):
         self.waiter = Waiter()
 
         self.transition_server = Server()
-        self.transition_client = Client()
-
-        self.NAME_LEN_SPT = "~"
-        self.FILES_SPT = "`"
-
-        # udp
-        self.UDPPort = 8888
-        self.searchTimeout = 2
-        self.searchTimes = 5
-
-        # tcp
-        self.TCPPort = 65500
-        self.connectTimeout = 1
-        self.connectTimes = 5
-
-        # IO
-        self.stringBufLen = 1024 * 8
-        self.fileIOBufLen = 1024 * 64
-
-        # default open dir
-        self.baseDir = "/home/" + getpass.getuser()
-        # default files are going to send
-        self.files = []
-
-        self.senderAddr = None
-        self.receiverAddr = None
-
-        # socket connection for threading
-        self.clientTcpConn = None
-        self.serverTcpConn = None
-
-        self.hasConnectedToRecver = False
-
-        # default action is send file
-        self.isSendFile = True
-        # receive files' description
-        self.fileDesc = []
-        # where to save the receive file
-        self.savePath = None
-
-        # self.loadConfig()
-        self.thisTimeFinished = False
-
-        # 添加信号槽, 更新当前状态
-        # sender
-        # self.udpClientThread = UdpClient.UdpClient(caller=self)
-        # self.tcpClientThread = TcpClientThread.TcpClientThread(caller=self)
-        # self.sendFileThread = sender.SendFileThread(caller=self)
-        # self.udpClientThread.updateState.connect(self.updateState)
-        # self.tcpClientThread.updateState.connect(self.updateState)
-        # self.sendFileThread.updateState.connect(self.updateState)
-        # self.sendFileThread.updateRate.connect(self.updateProcess)
 
         self.startListening()
 
-        # receiver
-        self.udpServerThread = receiver.udpServerThread(caller=self)
-        self.udpServerThread.start()
-        self.tcpServerThread = receiver.tcpServerThread(caller=self)
-        self.receiveFileThread = receiver.receiveFileThread(caller=self)
-        # state change update '''add update state slot'''
-        self.udpServerThread.updateState.connect(self.updateState)
-        self.tcpServerThread.updateState.connect(self.updateState)
-        self.tcpServerThread.updateFileList.connect(self.genRecvList)
-        self.receiveFileThread.updateState.connect(self.updateState)
-        self.receiveFileThread.updateRate.connect(self.updateProcess)
-
-        '''设置按钮监听'''
-        # self.removeBtn.clicked.connect(self.removeFileAction)
-        # self.savePathBtn.clicked.connect(self.savePathAction)
         self.send.clicked.connect(self.send_file_action)
         self.scan_button.clicked.connect(self.scanAction)
-        # self.sendFileRadio.clicked.connect(self.sendFileChecked)
-        # self.receiveFileRadio.clicked.connect(self.receiveFileChecked)
-        # self.connectHostBtn.udpServerThreadclicked.connect(self.searchReceiverAction)
-        # self.startBtn.clicked.connect(self.startWork)
-
-        '''将状态栏中的焦点移动到最后'''
-        # self.statusText.moveCursor(QtGui.QTextCursor.End)
-        # self.statusText.ensureCursorVisible()
-
-        '''将列表焦点移动到最后'''
-        # self.statusText.moveCursor(QtGui.QTextCursor.End)
-        # self.statusText.ensureCursorVisible()
-
-        # 默认设置为发送文件
-        # self.sendFileChecked()
-
-        # self.actionExit.triggered.connect(QApplication.quit)
-        # self.actionAbout.triggered.connect(self.showAbout)
 
     def startListening(self):
         Thread(target=self.waiter.loop).start()
         Thread(target=self.transition_server.listen).start()
-
-    def showAbout(self):
-        QMessageBox.information(self, "关于此软件",
-                                "<b>LanTrans v_0.0.1</b><br>作者: Xanarry<br>Date:2016/5/4<br>E-mail:xanarry@163.com<br>boom! 安卓版正在开发中")
 
     def loadConfig(self):
         print("load configuration file")
@@ -138,54 +44,6 @@ class LanTrans(UIMain):
             print("configure file not exist, using default")
             return
 
-    def sendFileChecked(self):  # =============================================================
-        '''设置发送文件的面板状态'''
-        if self.thisTimeFinished == True:
-            self.reset()
-            self.thisTimeFinished = False
-
-        self.isSendFile = True
-
-        self.scan_button.setEnabled(True)
-        # self.savePathBtn.setEnabled(False)
-
-    def receiveFileChecked(self):  # =====================================================================
-        '''接收文件时设置的状态'''
-        if self.thisTimeFinished == True:
-            self.reset()  ##########################################################################################
-            self.thisTimeFinished = False
-
-        self.isSendFile = False
-        self.sendFileRadio.setEnabled(True)
-        self.receiveFileRadio.setEnabled(False)
-
-        self.scan_button.setEnabled(False)
-        self.removeBtn.setEnabled(False)
-        self.savePathBtn.setEnabled(True)
-        self.startBtn.setVisible(False)
-        self.connectHostBtn.setEnabled(True)
-        self.connectHostBtn.setDefault(True)
-
-        self.connectHostBtn.setText("等待发送")
-        self.statusBar().showMessage("接收文件")
-
-    def disableAllBtn(self):
-        '''禁掉所有按钮'''
-        self.savePathBtn.setEnabled(False)
-        self.scan_button.setEnabled(False)
-        self.removeBtn.setEnabled(False)
-        self.connectHostBtn.setEnabled(False)
-        self.startBtn.setEnabled(False)
-        self.sendFileRadio.setEnabled(False)
-        self.receiveFileRadio.setEnabled(False)
-
-    def disableList(self):
-        '''禁掉列表中的选择按钮'''
-        for i in range(self.fileList.count()):
-            itemWidget = self.fileList.itemWidget(self.fileList.item(i))
-            itemWidget.fileCheckBox.setCheckState(2)  # 2 represent checked
-            itemWidget.fileCheckBox.setEnabled(False)
-
     def onGetPoint(self, address):
         print("onGetPoint: ", address)
 
@@ -194,10 +52,10 @@ class LanTrans(UIMain):
 
     def scanPoint(self):
         self.address = self.scanner.scan()
-        Thread(target=self.sendData).start()
+        self.display_receiver(self.address)
 
-    def sendData(self):
-        self.transition_client.send(self.address)
+    def display_receiver(self, receiver):
+        self.receiver_list_widget.addItem(str(receiver))
 
     def send_file_action(self):
 
@@ -212,95 +70,6 @@ class LanTrans(UIMain):
     def select_file(self):
         r = QFileDialog.getOpenFileName(self, "选择您想要传输的文件", "~/")
         return r[0]
-
-    def removeFileAction(self):
-        # traverse from end to start
-        if self.thisTimeFinished == True:
-            self.reset()
-            self.thisTimeFinished = False
-
-        for i in range(self.fileList.count() - 1, -1, -1):
-            itemWidget = self.fileList.itemWidget(self.fileList.item(i))
-            if itemWidget.fileCheckBox.isChecked():
-                self.fileList.takeItem(i)
-                self.files.remove(self.files[i])  # remove file
-
-    def savePathAction(self):
-        '''choose where to save the file'''
-        if self.thisTimeFinished == True:
-            self.reset()  ##########################################################################################
-            self.thisTimeFinished = False
-
-        self.savePath = QFileDialog.getExistingDirectory(None, "选择您的文件保存到何处", self.baseDir)
-        if self.savePath is not None and len(self.savePath) > 1:
-            self.statusText.append("<b><font color='blue'>MESSAGE:&nbsp;</font></b>文件将被保存到:" + str(self.savePath))
-            print("receiver", "file will saved in:", self.savePath)
-
-    def updateState(self, msg):
-        pass
-
-    def updateProcess(self, pair):
-        # (-1, -1, -1) all file finished
-        if sum(pair) == -3:
-            reply = QMessageBox.question(self, "Message", "任务完成, 是否继续?", QMessageBox.Yes, QMessageBox.No)
-            if reply == QMessageBox.No:
-                sys.exit()
-            else:
-                self.thisTimeFinished = True
-                self.recoverState()
-            return
-        elif sum(pair) == -6:
-            return
-
-        itemWidget = self.fileList.itemWidget(self.fileList.item(pair[0]))  # 列表下标
-        itemWidget.processBar.setProperty("value", pair[1])  # 对应条目的进度
-        speed = None
-        if pair[2] < 1024:  # 速度
-            speed = str(int(pair[2] * 100) / 100) + "KB/s"
-        elif pair[2] >= 0:
-            speed = str(int(pair[2] / 1024 * 100) / 100) + "MB/S"
-        if pair[2] == -1:
-            speed = "已完成"
-
-        itemWidget.state.setText(speed)
-
-    def recoverState(self):
-        if self.isSendFile == True:
-            print("sender", "recoverState()", "this is send file client")
-            self.sendFileChecked()
-        elif self.isSendFile == False:
-            print("receiver", "recoverState()", "this is receive file client")
-            self.receiveFileChecked()
-
-    def genRecvList(self, files):
-        for file in files:
-            itemWidget = ItemWidget()
-            itemWidget.setFileName(file[0])
-            itemWidget.setState("queue")
-            itemWidget.setProcedure(file[1])
-            itemWidget.fileCheckBox.setCheckState(2)  # 2 represent checked
-            itemWidget.fileCheckBox.setEnabled(False)
-
-            fileItem = QListWidgetItem()
-            fileItem.setSizeHint(itemWidget.sizeHint())
-
-            self.fileList.addItem(fileItem)
-            self.fileList.setItemWidget(fileItem, itemWidget)
-
-    def constructConnection(self):
-        '''create a tcp connection'''
-        if self.isSendFile == True:
-            self.tcpClientThread.start()
-            self.tcpClientThread.wait()
-
-        elif self.isSendFile == False:
-            if self.serverTcpConn == None:
-                self.statusText.append("<b><font color='red'>ERROR:&nbsp;</font></b>TCP连接无效")
-            else:  # start to receivfile
-                self.disableList()
-                self.disableAllBtn()
-                self.receiveFileThread.setFileDesc(self.fileDesc, self.savePath)
-                self.receiveFileThread.start()
 
     def send_file(self, file_path):
         pass
