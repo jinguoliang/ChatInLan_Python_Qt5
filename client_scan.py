@@ -1,7 +1,6 @@
 from point_detector import *
 
 SCAN_PORT = 9992
-SCAN_RESPOND_PORT = 8889
 
 
 class Waiter:
