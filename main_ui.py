@@ -29,8 +29,26 @@ class UIMain(QtWidgets.QMainWindow):
         self.create_control_part(centralWidget)
         self.create_receiver_part(centralWidget)
         self.create_list_part(centralWidget)
-
         self.setCentralWidget(centralWidget)
+
+    def create_my_ip_part(self, part, parent):
+
+        hbox = QtWidgets.QHBoxLayout(part)
+        hbox.setObjectName("hbox")
+
+        label = QtWidgets.QLabel(part)
+        label.setObjectName("label")
+        label.setText(self.translate("LanTrans", "我的 IP："))
+        hbox.addWidget(label)
+
+        self.my_ip_label = QtWidgets.QLabel(part)
+        self.my_ip_label.setObjectName("my_ip_label")
+        self.my_ip_label.setText("hello")
+        hbox.addWidget(self.my_ip_label)
+
+        hbox.addStretch(1)
+
+        parent.addItem(hbox)
 
     def create_control_part(self, parent):
         part = QtWidgets.QWidget(parent)
@@ -44,7 +62,6 @@ class UIMain(QtWidgets.QMainWindow):
         self.scan_button = QtWidgets.QPushButton(part)
         self.scan_button.setObjectName("scan_button")
         self.scan_button.setText(self.translate("LanTrans", "扫描"))
-
         vbox.addWidget(self.scan_button)
 
         space = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -83,6 +100,8 @@ class UIMain(QtWidgets.QMainWindow):
 
         vbox = QtWidgets.QVBoxLayout(part)
         vbox.setObjectName("vbox")
+
+        self.create_my_ip_part(part, vbox)
 
         label = QtWidgets.QLabel(part)
         label.setObjectName("label")
