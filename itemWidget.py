@@ -1,9 +1,10 @@
-from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import *
+
 
 class ItemWidget(QWidget):
     """docstring for ItemWidget"""
-    def __init__(self, parent = None):
+
+    def __init__(self, parent=None):
         super(ItemWidget, self).__init__(parent)
         self.itemLayout = QHBoxLayout()
 
@@ -28,10 +29,10 @@ class ItemWidget(QWidget):
         self.fileName.setStyleSheet('''color: rgb(0, 0, 255);''')
         self.state.setStyleSheet('''color: rgb(255, 0, 0);''')
 
-    def setFileName(self, fileName = "None"):
+    def setFileName(self, fileName="None"):
         self.fileName.setText(fileName)
 
-    def setState(self, state = "Queue"):
+    def setState(self, state="Queue"):
         self.state.setText(state)
 
     def setProcedure(self, percent):
