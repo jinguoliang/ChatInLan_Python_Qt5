@@ -8,7 +8,7 @@ TRANSITION_SERVER_PORT = 8832
 
 class Server:
     def __init__(self):
-        self.server_sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def listen(self):
         self.server_sock.bind(("", TRANSITION_SERVER_PORT))
@@ -45,5 +45,5 @@ class Client:
 
 
 def read_content(path):
-        f = open(path, 'rb')
-        return f.read()
+    f = open(path, 'rb')
+    return f.read()

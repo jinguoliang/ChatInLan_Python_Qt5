@@ -5,15 +5,12 @@ from PyQt5.QtWidgets import *
 from net import netutils
 from net.client_scan import *
 from ui.main_ui import UIMain
-from net.point_detector import *
 from net.transition import Server, Client
 
 
 class LanTrans(UIMain):
     def __init__(self):
         super().__init__()
-
-        self.detector = PointDetector()
 
         self.scanner = Scanner()
         self.waiter = Waiter()
