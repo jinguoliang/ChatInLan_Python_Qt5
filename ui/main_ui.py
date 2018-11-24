@@ -23,13 +23,13 @@ class UIMain(QtWidgets.QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def construct_ui(self):
-        centralWidget = QtWidgets.QWidget(self)
-        centralWidget.setObjectName("centralwidget")
+        root_widget = QtWidgets.QWidget(self)
+        root_widget.setObjectName("root")
 
-        self.create_control_part(centralWidget)
-        self.create_receiver_part(centralWidget)
-        self.create_list_part(centralWidget)
-        self.setCentralWidget(centralWidget)
+        self.create_control_part(root_widget)
+        self.create_receiver_part(root_widget)
+        self.create_list_part(root_widget)
+        self.setCentralWidget(root_widget)
 
     def create_my_ip_part(self, part, parent):
 
