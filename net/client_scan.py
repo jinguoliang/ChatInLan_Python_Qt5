@@ -25,13 +25,18 @@ class Waiter:
 
     def loop(self):
         while True:
-            print("wait_receiving")
-            s, address = self.server_sock.recvfrom(len(BROADCAST_DATA))
-            print("DetectListener:", "receiver data = ", s)
-            print(address)
+            try:
+                print("wait_receiving")
+                s, address = self.server_sock.recvfrom(len(BROADCAST_DATA))
+                print(address)
+            except Exception as e:
+                print(e)
+                continue
+
             if s.decode(UTF_8) == BROADCAST_DATA:
-                print("respond")
+                print("respond...")
                 self.server_sock.sendto(BROADCAST_RESPOND_DATA.encode(UTF_8), address)
+                print("responded")
 
 
 class Scanner:
@@ -50,7 +55,6 @@ class Scanner:
             addresses.append(address)
             s, address = self.wait_response()
 
-        print(addresses)
         return addresses
 
     def wait_response(self):
