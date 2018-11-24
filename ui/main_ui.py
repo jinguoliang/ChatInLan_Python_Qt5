@@ -43,7 +43,7 @@ class UIMain(QtWidgets.QMainWindow):
 
         self.my_ip_label = QtWidgets.QLabel(part)
         self.my_ip_label.setObjectName("my_ip_label")
-        self.my_ip_label.setText("hello")
+        self.my_ip_label.setText("...")
         hbox.addWidget(self.my_ip_label)
 
         hbox.addStretch(1)
@@ -84,12 +84,12 @@ class UIMain(QtWidgets.QMainWindow):
 
         label = QtWidgets.QLabel(part)
         label.setObjectName("label")
-        label.setText(self.translate("LanTrans", "进度："))
+        label.setText(self.translate("LanTrans", "消息："))
         vbox.addWidget(label)
 
-        self.fileList = QtWidgets.QListWidget(part)
-        self.fileList.setObjectName("fileList")
-        vbox.addWidget(self.fileList)
+        self.chat_list = QtWidgets.QListWidget(part)
+        self.chat_list.setObjectName("chat_list")
+        vbox.addWidget(self.chat_list)
 
         return part
 
@@ -146,6 +146,16 @@ class UIMain(QtWidgets.QMainWindow):
 
         menu_bar.addAction(menu_file.menuAction())
         menu_bar.addAction(menu_about.menuAction())
+
+    def show_message(self, message):
+        self.chat_list.addItem(str(message))
+
+    def display_receiver(self, receivers):
+        self.receiver_list_widget.clear()
+        try:
+            self.receiver_list_widget.addItems([r[0] for r in receivers])
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":

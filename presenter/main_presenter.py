@@ -1,5 +1,7 @@
 from threading import Thread
 
+from PyQt5 import QtCore
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import *
 
 from net import netutils
@@ -9,6 +11,8 @@ from net.transition import Server, Client
 
 
 class LanTrans(UIMain):
+    trigger = pyqtSignal()
+
     def __init__(self):
         super().__init__()
 
@@ -16,6 +20,7 @@ class LanTrans(UIMain):
         self.waiter = Waiter()
 
         self.transition_server = Server()
+        self.transition_server.signal.connect(self.show_message)
 
         self.show_my_ip()
 
@@ -27,9 +32,13 @@ class LanTrans(UIMain):
     def show_my_ip(self):
         self.my_ip_label.setText(netutils.get_my_lan_ip())
 
+    def callback(self, data):
+        print("callback = " + data)
+        self.show_message(data)
+
     def start_listening(self):
         Thread(target=self.waiter.loop).start()
-        Thread(target=self.transition_server.listen).start()
+        self.transition_server.start()
 
     def scan_action(self):
         Thread(target=self.scan_point).start()
@@ -38,10 +47,6 @@ class LanTrans(UIMain):
         self.addresses = self.scanner.scan()
         print(self.addresses)
         self.display_receiver(self.addresses)
-
-    def display_receiver(self, receivers):
-        self.receiver_list_widget.clear()
-        self.receiver_list_widget.addItems([r[0] for r in receivers])
 
     def send_file_action(self):
 
