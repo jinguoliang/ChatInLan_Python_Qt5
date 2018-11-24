@@ -2,7 +2,7 @@ import threading
 import time
 import unittest
 
-from point_detector import PointDetector, BROADCAST_DATA
+from net.point_detector import PointDetector
 
 
 class PointDetectorTest(unittest.TestCase):

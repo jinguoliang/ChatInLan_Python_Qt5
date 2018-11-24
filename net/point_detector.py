@@ -1,5 +1,4 @@
-import socket
-import time
+from net.client_scan import *
 
 MAX_DATA_SIZE = 1024 * 10
 
@@ -81,15 +80,6 @@ def udp_send(msg, address):
     a_socket.close()
 
 
-def udp_server(port):
-    a_socket = udp_sock()
-    a_socket.settimeout(10)
-    a_socket.bind(("", port))
-    return a_socket
-
-def udp_sock():
-    return socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-
 def udp_waitLoop():
     server_socket = udp_server(8882)
     while True:
@@ -102,6 +92,7 @@ def udp_waitLoop():
             time.sleep(1)
             udp_send(BROADCAST_RESPOND_DATA, (address[0], 9992))
 
+
 def udp_scan_client():
     udp_broadcast(BROADCAST_DATA, 8882)
     server = udp_server(9992)
@@ -112,5 +103,4 @@ def udp_scan_client():
 
 
 if __name__ == '__main__':
-    PointDetector().broadcast(BROADCAST_RESPOND_DATA)
-    PointDetector().broadcast("test")
+    PointDetector().broadcast(BROADCAST_RESPOND_DATA, 8891)

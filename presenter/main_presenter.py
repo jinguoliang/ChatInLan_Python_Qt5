@@ -2,11 +2,11 @@ from threading import Thread
 
 from PyQt5.QtWidgets import *
 
-import NetUtils
-from client_scan import *
-from main_ui import UIMain
-from point_detector import *
-from transition import Server, Client
+from net import netutils
+from net.client_scan import *
+from ui.main_ui import UIMain
+from net.point_detector import *
+from net.transition import Server, Client
 
 
 class LanTrans(UIMain):
@@ -28,7 +28,7 @@ class LanTrans(UIMain):
         self.scan_button.clicked.connect(self.scan_action)
 
     def show_my_ip(self):
-        self.my_ip_label.setText(NetUtils.get_my_lan_ip())
+        self.my_ip_label.setText(netutils.get_my_lan_ip())
 
     def start_listening(self):
         Thread(target=self.waiter.loop).start()

@@ -1,6 +1,19 @@
-from point_detector import *
+import socket
+
+from net.point_detector import *
 
 SCAN_PORT = 9992
+
+
+def udp_server(port):
+    a_socket = udp_sock()
+    a_socket.settimeout(10)
+    a_socket.bind(("", port))
+    return a_socket
+
+
+def udp_sock():
+    return socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
 
 class Waiter:
@@ -29,15 +42,15 @@ class Scanner:
         print("sendto")
 
         addresses = []
-        s, address = self.waitResponse()
+        s, address = self.wait_response()
 
         while s == BROADCAST_RESPOND_DATA:
             addresses.append(address)
-            s, address = self.waitResponse()
+            s, address = self.wait_response()
         print(addresses)
         return addresses
 
-    def waitResponse(self):
+    def wait_response(self):
         try:
             s, address = self.client_sock.recvfrom(len(BROADCAST_RESPOND_DATA))
             print(address)
