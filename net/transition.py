@@ -46,15 +46,19 @@ class ReceiverThread(Thread):
             data = self.client_sock.recv(BLOCK_SIZE).decode()
 
 
-
 class Client:
-    def __init__(self):
+    def __init__(self, address):
+        self.address = address
         self.client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    def send(self, address, path):
+    def send_file(self, path):
         data = read_content(path)
-        self.client_sock.connect((address[0], TRANSITION_SERVER_PORT))
+        self.client_sock.connect((self.address[0], TRANSITION_SERVER_PORT))
         self.client_sock.send(data)
+
+    def send_text(self, data):
+        self.client_sock.connect((self.address[0], TRANSITION_SERVER_PORT))
+        self.client_sock.send(data.encode())
 
 
 def read_content(path):

@@ -1,17 +1,14 @@
 from threading import Thread
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import *
 
 from net import netutils
 from net.client_scan import *
-from ui.main_ui import UIMain
 from net.transition import Server, Client
+from ui.main_ui import UIMain
 
 
 class LanTrans(UIMain):
-    trigger = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -26,7 +23,7 @@ class LanTrans(UIMain):
 
         self.start_listening()
 
-        self.send.clicked.connect(self.send_file_action)
+        self.send.clicked.connect(self.send_message)
         self.scan_button.clicked.connect(self.scan_action)
 
     def show_my_ip(self):
@@ -48,8 +45,10 @@ class LanTrans(UIMain):
         print(self.addresses)
         self.display_receiver(self.addresses)
 
-    def send_file_action(self):
+    def send_message(self):
+        Client(self.addresses[0]).send_text("hello world")
 
+    def send_file_action(self):
         file_name = self.select_file()
         if file_name is None:
             return
@@ -63,16 +62,16 @@ class LanTrans(UIMain):
         return r[0]
 
     def send_file(self, file_path):
-        SendFileThread(self.addresses, file_path).start()
+        for address in self.addresses:
+            SendFileThread(address, file_path).start()
 
 
 class SendFileThread(Thread):
-
     def __init__(self, address, path):
         Thread.__init__(self, target=self.run)
         self.file_path = path
         self.address = address
-        self.transition_client = Client()
+        self.transition_client = Client(self.address)
 
     def run(self):
-        self.transition_client.send(self.address, self.file_path)
+        self.transition_client.send_file(self.file_path)
