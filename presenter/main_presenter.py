@@ -24,6 +24,7 @@ class LanTrans(UIMain):
         self.start_listening()
 
         self.send.clicked.connect(self.send_message)
+        self.sendFile.clicked.connect(self.send_file_action)
         self.scan_button.clicked.connect(self.scan_action)
 
     def show_my_ip(self):
@@ -46,7 +47,10 @@ class LanTrans(UIMain):
         self.display_receiver(self.addresses)
 
     def send_message(self):
-        Client(self.addresses[0]).send_text("hello world")
+        text = self.inputbox.toPlainText()
+        self.inputbox.clear()
+        for address in self.addresses:
+            Client(address).send_text(text)
 
     def send_file_action(self):
         file_name = self.select_file()

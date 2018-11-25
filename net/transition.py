@@ -59,6 +59,7 @@ class Client:
     def send_text(self, data):
         self.client_sock.connect((self.address[0], TRANSITION_SERVER_PORT))
         self.client_sock.send(data.encode())
+        self.client_sock.close()
 
 
 def read_content(path):

@@ -28,7 +28,8 @@ class UIMain(QtWidgets.QMainWindow):
 
         self.create_control_part(root_widget)
         self.create_receiver_part(root_widget)
-        self.create_list_part(root_widget)
+        self.create_message_part(root_widget)
+        self.create_send_message_part(root_widget)
         self.setCentralWidget(root_widget)
 
     def create_my_ip_part(self, part, parent):
@@ -67,16 +68,42 @@ class UIMain(QtWidgets.QMainWindow):
         space = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         vbox.addItem(space)
 
-        self.send = QtWidgets.QPushButton(part)
-        self.send.setObjectName("send")
-        self.send.setText(self.translate("LanTrans", "发送"))
-        vbox.addWidget(self.send)
+        return part
+
+    def create_send_message_part(self, parent):
+
+        vbox = QtWidgets.QVBoxLayout()
+
+        sendbutton = QtWidgets.QPushButton()
+        sendbutton.setText("发送信息")
+        vbox.addWidget(sendbutton)
+        self.send = sendbutton
+
+        sendFile = QtWidgets.QPushButton()
+        sendFile.setObjectName("send")
+        sendFile.setText(self.translate("LanTrans", "发送文件"))
+        vbox.addWidget(sendFile)
+        self.sendFile = sendFile
+
+        controlpart = QtWidgets.QWidget()
+        controlpart.setLayout(vbox)
+
+        inputbox = QtWidgets.QTextEdit()
+        self.inputbox = inputbox
+
+        hbox = QtWidgets.QHBoxLayout()
+        hbox.addWidget(inputbox)
+        hbox.addWidget(controlpart)
+
+        part = QtWidgets.QWidget(parent)
+        part.setGeometry(QtCore.QRect(29, 360, 471, 80))
+        part.setLayout(hbox)
 
         return part
 
-    def create_list_part(self, parent):
+    def create_message_part(self, parent):
         part = QtWidgets.QWidget(parent)
-        part.setGeometry(QtCore.QRect(29, 209, 471, 241))
+        part.setGeometry(QtCore.QRect(29, 109, 471, 241))
         part.setObjectName("part")
 
         vbox = QtWidgets.QVBoxLayout(part)
@@ -95,7 +122,7 @@ class UIMain(QtWidgets.QMainWindow):
 
     def create_receiver_part(self, parent):
         part = QtWidgets.QWidget(parent)
-        part.setGeometry(QtCore.QRect(30, 20, 471, 171))
+        part.setGeometry(QtCore.QRect(30, 20, 471, 100))
         part.setObjectName("part")
 
         vbox = QtWidgets.QVBoxLayout(part)
